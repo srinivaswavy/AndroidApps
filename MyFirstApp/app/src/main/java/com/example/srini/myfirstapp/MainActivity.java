@@ -1,5 +1,6 @@
 package com.example.srini.myfirstapp;
 
+import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.microsoft.azure.sdk.iot.device.DeviceClient;
 import com.microsoft.azure.sdk.iot.device.IotHubClientProtocol;
 //import com.microsoft.azure.iothub.Message;
@@ -24,33 +27,24 @@ import java.util.concurrent.ExecutorService;
 
 public class MainActivity extends AppCompatActivity {
     int i;
-    private static String connString = "<PulseCheckerDevice - ConnectionString>";
+    static boolean isProcessStopped = false;
+    private static String connString ;
     private static IotHubClientProtocol protocol = IotHubClientProtocol.MQTT;
-    private static String deviceId = "<PulseCheckerDevice - DeviceId>";
+    private static String deviceId = "PulseChecker";
     private static DeviceClient client;
     private Handler handler;
     private MessageSender sender;
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
+        Resources res = getResources();
+        connString = res.getString(R.string.deviceConnectionString);
+        deviceId = res.getString(R.string.deviceId);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
         final TextView view = (TextView) findViewById(R.id.textView2);
         final ScrollView scrollview = (ScrollView)findViewById(R.id.textPanel);
         view.setText("");
-        Button b = (Button)findViewById(R.id.buttonSTOP);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                sender.stopThread=true;
-                try {
-                    client.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }});
-
         handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -73,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         sender = new MessageSender(handler);
         sender.start();
-
+        isProcessStopped = false;
 
     }
     @Override
@@ -167,5 +161,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public  void displayStart(View v)
+    {
+        Toast t = Toast.makeText(getApplicationContext(),"Pulse checker stopped",Toast.LENGTH_SHORT);
+        try {
+            Resources res =getResources();
+            Button b = (Button)findViewById(R.id.buttonSTOP);
+            if(!isProcessStopped) {
+                client.close();
+                b.setText(res.getString(R.string.startLabel));
+                sender.stopThread=true;
+                isProcessStopped = true;
+            }else
+            {
+                client.open();
+                b.setText(res.getString(R.string.stopLabel));
+                isProcessStopped = false;
+                sender = new MessageSender(handler);
+                sender.start();
+                t.setText("Pulse checker started");
+            }
+            t.show();
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }

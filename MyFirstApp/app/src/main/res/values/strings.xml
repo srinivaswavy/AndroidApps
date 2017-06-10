@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">My First App</string>
+    <string name="app_name">Pulse Checker</string>
+    <string name="deviceConnectionString">HostName=PatientMR.azure-devices.net;DeviceId=PulseChecker;SharedAccessKey=XE84drbuCqkFzYvqaSveC5ZW998v4qzcDbRdB7Jt3Os=</string>
+    <string name="deviceId">PulseChecker</string>
+    <string name="startLabel">Start</string>
+    <string name="stopLabel">Stop</string>
 </resources>
